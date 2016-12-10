@@ -41,8 +41,7 @@ INT WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	return 0;
 }
 ```
-After this process;
-Clicking on [test://Success](test://Success) will print 
+After you launched it atleast once, clicking on [test://Success](test://Success) will print 
 ```
 Hello!
 Just got a message via protocol: test
