@@ -69,49 +69,6 @@ namespace protocol
 		string procol_name;
 		vector<callback_handler_t> functions;
 
-		static protocol_t* init_protocol( string procol_name )
-		{
-			if ( !proto_cs_init )
-				InitializeCriticalSection( &proto_cs );
-
-			static const auto open_key = []( HKEY root_key, const char* sub_key ) ->HKEY
-			{
-				HKEY key_handle;
-				if ( RegOpenKeyExA( root_key, sub_key, NULL, KEY_ALL_ACCESS, &key_handle ) == ERROR_FILE_NOT_FOUND )
-					RegCreateKeyExA( root_key, sub_key, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key_handle, NULL );
-				return key_handle;
-			};
-			static const auto set_val = []( HKEY key_handle, const char* value_name, string& data ) -> void
-			{
-				RegSetValueExA( key_handle, value_name, NULL, REG_SZ, (BYTE*)data.c_str(), data.size() + 1 );
-			};
-			static const auto close_key = RegCloseKey;
-
-			char path[2048];
-			char command[4096];
-
-			GetModuleFileNameA( GetModuleHandleA( NULL ), path, 2048 );
-			sprintf_s( command, R"("%s" "%%1")", path );
-
-			HKEY key = open_key( HKEY_CLASSES_ROOT, procol_name.c_str() );
-			set_val( key, "", string( "URL:srift protocol" ) );
-			set_val( key, "URL Protocol", string( "" ) );
-			close_key( key );
-			close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell").c_str() ) );
-			close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open").c_str() ) );
-			close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open\\Command").c_str() ) );
-
-
-			key = open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open\\Command").c_str() );
-			set_val( key, "", string( command ) );
-			close_key( key );
-
-			protocol_t * p = new protocol_t{ procol_name };
-			EnterCriticalSection( &proto_cs );
-			protos_int.push_back( p );
-			LeaveCriticalSection( &proto_cs );
-			return p;
-		}
 		void add_callback( callback_handler_t fn )
 		{
 			functions.push_back( fn );
@@ -133,6 +90,50 @@ namespace protocol
 			LeaveCriticalSection( &proto_cs );
 		}
 	};
+
+	static protocol_t* create_protocol( string procol_name )
+	{
+		if ( !proto_cs_init )
+			InitializeCriticalSection( &proto_cs );
+
+		static const auto open_key = []( HKEY root_key, const char* sub_key ) ->HKEY
+		{
+			HKEY key_handle;
+			if ( RegOpenKeyExA( root_key, sub_key, NULL, KEY_ALL_ACCESS, &key_handle ) == ERROR_FILE_NOT_FOUND )
+				RegCreateKeyExA( root_key, sub_key, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key_handle, NULL );
+			return key_handle;
+		};
+		static const auto set_val = []( HKEY key_handle, const char* value_name, string& data ) -> void
+		{
+			RegSetValueExA( key_handle, value_name, NULL, REG_SZ, (BYTE*)data.c_str(), data.size() + 1 );
+		};
+		static const auto close_key = RegCloseKey;
+
+		char path[2048];
+		char command[4096];
+
+		GetModuleFileNameA( GetModuleHandleA( NULL ), path, 2048 );
+		sprintf_s( command, R"("%s" "%%1")", path );
+
+		HKEY key = open_key( HKEY_CLASSES_ROOT, procol_name.c_str() );
+		set_val( key, "", string( "URL:srift protocol" ) );
+		set_val( key, "URL Protocol", string( "" ) );
+		close_key( key );
+		close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell").c_str() ) );
+		close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open").c_str() ) );
+		close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open\\Command").c_str() ) );
+
+
+		key = open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open\\Command").c_str() );
+		set_val( key, "", string( command ) );
+		close_key( key );
+
+		protocol_t * p = new protocol_t{ procol_name };
+		EnterCriticalSection( &proto_cs );
+		protos_int.push_back( p );
+		LeaveCriticalSection( &proto_cs );
+		return p;
+	}
 
 	static void handle_cmd_internal( const char * cmd_raw )
 	{

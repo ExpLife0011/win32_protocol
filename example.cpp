@@ -30,7 +30,7 @@ void print_thread_safe(string& str)
 INT WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			 PCHAR lpCmdLine, INT nCmdShow )
 {
-	protocol::protocol_t * p = protocol::protocol_t::init_protocol( "test" );
+	protocol::protocol_t * p = protocol::create_protocol( "test" );
 
 	p->add_callback( []( protocol::proto_cmd_t& cmd )
 	{
