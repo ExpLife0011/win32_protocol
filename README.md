@@ -2,7 +2,7 @@
 Header-only URI Protocol Handler for windows
 
 #How to use it?
-Here's all the API you need!
+Here's all the functions you need to know about!
 ```C++
 void handle_cmd( const char* cmd_raw ); // you should pass lpCmdLine to this function for everything to function properly
 protocol_t* create_protocol( std::string protocol_name ); // creates a new protocol and registers it if it wasnt registered before so it can be used ( protocol_name://x/y/z/ )
@@ -41,3 +41,12 @@ INT WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	return 0;
 }
 ```
+After this process;
+Clicking on [test://Success](test://Success) will print 
+```
+Hello!
+Just got a message via protocol: test
+Args:
+[0] Success!
+```
+on the parent process (or if theres no already launched copy, the newly launched one).
