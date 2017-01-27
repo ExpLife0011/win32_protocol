@@ -22,7 +22,7 @@ INT WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	p->add_callback( []( protocol::proto_cmd_t& cmd )
 	{
-		string data = "Hello!\nJust got a message via protocol: " + cmd.procol_name + "\nArgs:\n";
+		string data = "Hello!\nJust got a message via protocol: " + cmd.protocol_name + "\nArgs:\n";
 		
 		int n = 0;
 		for ( string& s : cmd.args )

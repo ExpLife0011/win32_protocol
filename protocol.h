@@ -14,7 +14,7 @@ namespace protocol
 	struct protocol_t;
 	struct proto_cmd_t
 	{
-		string procol_name;
+		string protocol_name;
 		vector<string> args;
 
 		proto_cmd_t( string str_in )
@@ -26,7 +26,7 @@ namespace protocol
 			{
 				if ( step == 0 && str_in[i] == ':' )
 				{
-					procol_name = str_in.substr( 1, i-1 );
+					protocol_name = str_in.substr( 1, i-1 );
 					step++;
 				}
 				else if ( step == 1 && str_in[i] == '/' )
@@ -66,7 +66,7 @@ namespace protocol
 
 	struct protocol_t
 	{
-		string procol_name;
+		string protocol_name;
 		vector<callback_handler_t> functions;
 
 		void add_callback( callback_handler_t fn )
@@ -75,7 +75,7 @@ namespace protocol
 		}
 		void handle( proto_cmd_t& cmd )
 		{
-			if ( cmd.procol_name != this->procol_name )
+			if ( cmd.protocol_name != this->protocol_name )
 				return;
 			for ( auto fn : functions )
 				fn( cmd );
@@ -91,7 +91,7 @@ namespace protocol
 		}
 	};
 
-	static protocol_t* create_protocol( string procol_name )
+	static protocol_t* create_protocol( string protocol_name )
 	{
 		if ( !proto_cs_init )
 			InitializeCriticalSection( &proto_cs );
@@ -115,20 +115,20 @@ namespace protocol
 		GetModuleFileNameA( GetModuleHandleA( NULL ), path, 2048 );
 		sprintf_s( command, R"("%s" "%%1")", path );
 
-		HKEY key = open_key( HKEY_CLASSES_ROOT, procol_name.c_str() );
+		HKEY key = open_key( HKEY_CLASSES_ROOT, protocol_name.c_str() );
 		set_val( key, "", string( "URL:srift protocol" ) );
 		set_val( key, "URL Protocol", string( "" ) );
 		close_key( key );
-		close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell").c_str() ) );
-		close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open").c_str() ) );
-		close_key( open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open\\Command").c_str() ) );
+		close_key( open_key( HKEY_CLASSES_ROOT, (protocol_name + "\\Shell").c_str() ) );
+		close_key( open_key( HKEY_CLASSES_ROOT, (protocol_name + "\\Shell\\Open").c_str() ) );
+		close_key( open_key( HKEY_CLASSES_ROOT, (protocol_name + "\\Shell\\Open\\Command").c_str() ) );
 
 
-		key = open_key( HKEY_CLASSES_ROOT, (procol_name + "\\Shell\\Open\\Command").c_str() );
+		key = open_key( HKEY_CLASSES_ROOT, (protocol_name + "\\Shell\\Open\\Command").c_str() );
 		set_val( key, "", string( command ) );
 		close_key( key );
 
-		protocol_t * p = new protocol_t{ procol_name };
+		protocol_t * p = new protocol_t{ protocol_name };
 		EnterCriticalSection( &proto_cs );
 		protos_int.push_back( p );
 		LeaveCriticalSection( &proto_cs );
